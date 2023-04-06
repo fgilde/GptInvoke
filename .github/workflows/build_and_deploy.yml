@@ -30,9 +30,8 @@ jobs:
       run: dotnet pack --configuration Release --no-build -o out
 
     - name: Deploy
-      uses: rohith/publish-nuget@v2
+      uses: brandedoutcast/publish-nuget@v2.5.2
       with:
         PROJECT_FILE_PATH: './GptInvoke/GptInvoke.csproj'
         NUGET_KEY: ${{ secrets.NUGET_API_KEY }}
-        PACKAGE_DIRECTORY: './out'
-
+        OUTPUT_PATH: './out'

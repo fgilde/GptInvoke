@@ -12,6 +12,7 @@
     <MinorVersion>2</MinorVersion>
     <PatchVersion>$([System.DateTime]::Now.ToString(`yyMMddHH`))</PatchVersion>
     <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageVersion>
+    
     <LangVersion>11</LangVersion>
     <Authors>Florian Gilde</Authors>
     <Description>
