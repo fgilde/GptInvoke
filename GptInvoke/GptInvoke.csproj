@@ -26,6 +26,7 @@
     <PackageIcon>main.png</PackageIcon>
     <PackageIconUrl />
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <BaseOutputPath>../artifacts</BaseOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
