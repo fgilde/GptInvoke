@@ -32,4 +32,8 @@ jobs:
     - name: Deploy
       env:
         NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-      run: dotnet nuget push out/*.nupkg -k ${{ env.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+      shell: pwsh
+      run: |
+        Get-ChildItem -Path out -Filter *.nupkg | ForEach-Object {
+          dotnet nuget push $_.FullName -k $env:NUGET_API_KEY -s https://api.nuget.org/v3/index.json
+        }
