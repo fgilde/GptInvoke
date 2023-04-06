@@ -12,11 +12,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ActionCommander\GptInvoke.csproj" />
+    <Folder Include="MyServices\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="MyServices\" />
+    <ProjectReference Include="..\GptInvoke\GptInvoke.csproj" />
   </ItemGroup>
 
 </Project>

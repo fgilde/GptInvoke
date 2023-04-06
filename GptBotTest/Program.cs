@@ -3,15 +3,20 @@ using GptInvoke.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using OpenAI.Models;
 
 Console.WriteLine("Hello spooky world where the AI will soon rule!");
 
-var apiKey = "<YOUR API KEY>";
+var apiKey = "";
 
 
 using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureLogging(logging => logging.ClearProviders())
-    .ConfigureServices(services => services.AddGptActionInvoker(apiKey))
+    .ConfigureServices(services => services.AddGptActionInvoker(settings =>
+    {
+        settings.ApiKey = apiKey;
+        settings.Model = Model.GPT3_5_Turbo; // YOU should use GPT-4 if you can
+    }))
     .Build();
 
 

@@ -5,7 +5,7 @@ VisualStudioVersion = 17.4.33103.184
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GptBotTest", "GptBotTest\GptBotTest.csproj", "{A2259556-44B0-4510-8327-3CB131C83F1D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GptInvoke", "ActionCommander\GptInvoke.csproj", "{05663398-50A5-4C6A-A215-AA4BAC6B0AAA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GptInvoke", "GptInvoke\GptInvoke.csproj", "{05663398-50A5-4C6A-A215-AA4BAC6B0AAA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
