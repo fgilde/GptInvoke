@@ -15,10 +15,7 @@ public class MyClockService : IGptInvokableService
     {
         var value = parameters.First().Value;
         var dt = value is DateTime time ? time : DateTime.Parse(value.ToString());
-        var color = Console.ForegroundColor;
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"HELLO from {GetType()} I created a new alarm at {dt}"); 
-        Console.ForegroundColor = color;
+        ConsoleHelper.WriteLineInColor($"HELLO from {GetType()} I created a new alarm at {dt}", ConsoleColor.Green); 
         return Task.FromResult(true);
     }
 }

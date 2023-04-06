@@ -16,12 +16,7 @@ public class MyProductService : IGptInvokableService
     {
         var name = parameters["Name"].ToString();
         var barcode = parameters["Barcode"].ToString();
-
-        var color = Console.ForegroundColor;
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"HELLO from {GetType()} I created a new Product with the Name {name} and the Barcode {barcode}");
-        Console.ForegroundColor = color;
-
+        ConsoleHelper.WriteLineInColor($"HELLO from {GetType()} I created a new Product with the Name {name} and the Barcode {barcode}", ConsoleColor.Green);
         return Task.FromResult(true);
     }
 }

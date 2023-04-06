@@ -1,4 +1,5 @@
-﻿using GptInvoke;
+﻿using GptBotTest;
+using GptInvoke;
 using GptInvoke.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -6,9 +7,10 @@ using Microsoft.Extensions.Logging;
 using OpenAI.Models;
 
 Console.WriteLine("Hello spooky world where the AI will soon rule!");
+AppDomain.CurrentDomain.UnhandledException += (_, args) => ConsoleHelper.WriteLineInColor(args.ExceptionObject.ToString(), ConsoleColor.DarkRed);
+AppDomain.CurrentDomain.ProcessExit += (_, _) => Console.WriteLine("Goodbye cruel world!");
 
-var apiKey = "";
-
+var apiKey = Environment.GetEnvironmentVariable("GPT_API_KEY", EnvironmentVariableTarget.User) ?? "<YOUR API KEY>";
 
 using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureLogging(logging => logging.ClearProviders())
@@ -26,7 +28,9 @@ Console.WriteLine("How can I assist you?");
 while (true)
 {
     var userCommand = Console.ReadLine();
-    if (!string.IsNullOrEmpty(userCommand))
+    if (userCommand == "clear")
+        await commander.ClearHistoryAsync();
+    else if (!string.IsNullOrEmpty(userCommand))
     {
         var res = await commander.PromptAsync(userCommand);
         res.Switch(Console.WriteLine, _ => Console.WriteLine("####################################" + Environment.NewLine));
