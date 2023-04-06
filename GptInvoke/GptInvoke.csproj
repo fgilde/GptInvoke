@@ -1,20 +1,52 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Title>GptInvoke</Title>
-  </PropertyGroup>
 
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <MajorVersion>1</MajorVersion>
+    <MinorVersion>2</MinorVersion>
+    <PatchVersion>$([System.DateTime]::Now.ToString(`yyMMddHH`))</PatchVersion>
+    <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageVersion>
+    <LangVersion>11</LangVersion>
+    <Authors>Florian Gilde</Authors>
+    <Description>
+      GptInvoke is a NuGet package that simplifies the integration of ChatGPT with your own service invocation. This allows you to easily combine AI with custom service execution, such as calling a webhook or performing an action in your application.
+    </Description>
+    <PackageProjectUrl>https://github.com/fgilde/GptInvoke</PackageProjectUrl>
+    <RepositoryType>Git</RepositoryType>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/fgilde/GptInvoke</RepositoryUrl>
+    <Copyright>Copyright © $(Authors) 2020-$([System.DateTime]::Now.Year)</Copyright>
+    <PackageIcon>main.png</PackageIcon>
+    <PackageIconUrl />
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Nextended.Core" Version="7.0.21" />
     <!--<PackageReference Include="OpenAI" Version="1.6.0" />-->
     <PackageReference Include="OpenAI-DotNet" Version="6.5.0" />
     <PackageReference Include="OneOf" Version="3.0.243" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="screenshots\logo\main.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 

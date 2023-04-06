@@ -1,11 +1,15 @@
-# GptInvoke
+# Custom Service Invocation with ChatGPT
 
-GptInvoke is a NuGet package that simplifies the integration of ChatGPT with your own service invocation. This allows you to easily combine AI with custom service execution, such as calling a webhook or performing an action in your application.
+This package allows you to easily integrate ChatGPT with your custom service execution, such as invoking webhooks or performing actions within your application.
 
-## Links
+[![GitHub](https://img.shields.io/badge/GitHub-Source-blue)](https://github.com/fgilde/GptInvoke)
+[![NuGet](https://img.shields.io/badge/NuGet-Package-blue)](https://www.nuget.org/packages/GptInvoke)
 
-- [NuGet Package](https://www.nuget.org/packages/GptInvoke)
-- [GitHub Source](https://github.com/fgilde/GptInvoke)
+## Table of Contents
+- [Installation](#installation)
+- [Service Registration](#service-registration)
+- [Service Implementation](#service-implementation)
+- [Invocation](#invocation)
 
 ## Installation
 
@@ -15,29 +19,25 @@ To install the GptInvoke package, run the following command in the Package Manag
 Install-Package GptInvoke
 ```
 
-
-Service Registration
-To register the necessary services, add the following code in your Program.cs file:
-
-```c#
-using IHost host = Host.CreateDefaultBuilder(args)
-    .ConfigureLogging(logging => logging.ClearProviders())
-    .ConfigureServices(services => services.AddGptActionInvoker("YOUR-API-KEY"))
-    .Build();
-
+or add the Package reference like this 
+```xml
+<PackageReference Include="GptInvoke" Version="*" />
 ```
 
-```c#
+## Service Registration
+
+To register the necessary services, add the following code in your `Program.cs` file:
+
+```csharp
 using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureLogging(logging => logging.ClearProviders())
     .ConfigureServices(services => services.AddGptActionInvoker("YOUR-API-KEY"))
     .Build();
-
 ```
 
 You can also specify settings for the action, like this:
 
-```c#
+```csharp
 using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureLogging(logging => logging.ClearProviders())
     .ConfigureServices(services => services.AddGptActionInvoker(s =>
@@ -46,13 +46,13 @@ using IHost host = Host.CreateDefaultBuilder(args)
         s.Model = Model.GPT4;
     }))
     .Build();
-
-
 ```
-Service Implementation
-To implement a custom service, create a new class that implements the IGptInvokableService interface:
 
-```c#
+## Service Implementation
+
+To implement a custom service, create a new class that implements the `IGptInvokableService` interface:
+
+```csharp
 public interface IGptInvokableService
 {
     public string Name { get; }
@@ -62,8 +62,9 @@ public interface IGptInvokableService
 }
 ```
 
-Sample implementation
-```c#
+Sample implementation:
+
+```csharp
 public class MyClockService : IGptInvokableService
 {
     public string Name { get; set; } = "Alarm clock service";
@@ -111,10 +112,12 @@ public class MyProductService : IGptInvokableService
 }
 ```
 
+Services can then invoked like this 
 
-Using
+![Screenshot](https://raw.githubusercontent.com/fgilde/GptInvoke/main/GptInvoke/screenshots/Clock_DE.png)
 
-```c#
+![Screenshot](https://raw.githubusercontent.com/fgilde/GptInvoke/main/GptInvoke/screenshots/Product_EN.png)
+
 
 ## Invocation
 
@@ -132,12 +135,11 @@ while (true)
         res.Switch(Console.WriteLine, _ => Console.WriteLine("####################################" + Environment.NewLine));
     }
 }
-
 ```
 
-The PromptAsync method returns a OneOf<string, GptServiceResult> object. If the result is a GptServiceResult, the service has been invoked and you will receive the following class:
+The `PromptAsync` method returns a `OneOf<string, GptServiceResult>` object. If the result is a `GptServiceResult`, the service has been invoked and you will receive the following class:
 
-```c#
+```csharp
 public class GptServiceResult
 {
     public string Service { get; set; }
@@ -146,7 +148,6 @@ public class GptServiceResult
     public bool Successful { get; set; }
     public IGptInvokableService UsedService { get; set; }
 }
-
 ```
 
 Now you have all the necessary information to start using GptInvoke in your projects. Simply follow the instructions for installation, service registration, service implementation, and invocation to integrate ChatGPT with your custom service execution.
