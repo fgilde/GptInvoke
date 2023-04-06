@@ -1,8 +1,9 @@
 name: Build and Deploy NuGet Package
 
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+    - main
 
 jobs:
   build_and_deploy:
