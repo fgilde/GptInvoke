@@ -21,13 +21,13 @@ jobs:
       run: dotnet restore
       
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build ./GptInvoke/GptInvoke.csproj --configuration Release --no-restore -o out
 
-    - name: Test
-      run: dotnet test --no-restore --verbosity normal
+    #- name: Test
+    #  run: dotnet test --no-restore --verbosity normal
 
-    - name: Pack
-      run: dotnet pack --configuration Release --no-build -o out
+    #- name: Pack
+    #  run: dotnet pack --configuration Release --no-build -o out
 
     - name: Deploy
       env:

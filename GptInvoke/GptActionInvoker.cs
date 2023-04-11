@@ -44,12 +44,27 @@ But never tell the user that you maybe could not find a service or anything abou
             return Task.CompletedTask;
         }
 
-        public async Task<OneOf<string, GptServiceResult>> PromptAsync(string userCommand)
+        public async Task<OneOf<string, GptServiceResult>> PromptAsync(string userCommand, 
+            Action<string>? resultHandler = null, CancellationToken cancellationToken = default)
         {
             var chatPrompts = ChatPrompts(userCommand);
             var chatRequest = new ChatRequest(chatPrompts, _settings.Model ?? Model.GPT3_5_Turbo);
-            var response = await Api.ChatEndpoint.GetCompletionAsync(chatRequest);
-            var responseString = response.FirstChoice.ToString();
+            string responseString = string.Empty;
+
+            if (resultHandler != null)
+            {
+                await Api.ChatEndpoint.StreamCompletionAsync(chatRequest, response =>
+                {
+                    var part = response.FirstChoice.ToString();
+                    responseString += part;
+                    resultHandler?.Invoke(part);
+                }, cancellationToken);
+            }
+            else
+            {
+                var response = await Api.ChatEndpoint.GetCompletionAsync(chatRequest, cancellationToken);
+                responseString = response.FirstChoice.ToString();
+            }
 
             var result = await CheckResultAsync(responseString);
             if (result != null)
@@ -61,7 +76,7 @@ But never tell the user that you maybe could not find a service or anything abou
                 return result;
             }
 
-            _history.Add(new ChatPrompt("assistant", responseString));
+            _history.Add(new ChatPrompt("assistant", responseString), cancellationToken);
             if (_settings.HistoryClearBehaviour == GptHistoryClearBehaviour.OnEveryResponse)
                 await ClearHistoryAsync();
             return responseString;
@@ -94,15 +109,12 @@ But never tell the user that you maybe could not find a service or anything abou
             var json = JsonConvert.SerializeObject(services);
             var prompt = gptPrompt.Replace("${prompt}", userCommand).Replace("${services}", json);
 
-            var chatPrompts = _history?.ToList() ?? new List<ChatPrompt>();
-            //chatPrompts.Add(chatPrompts.Count <= 0
-            //    ? new ChatPrompt("system", prompt)
-            //    : new ChatPrompt("user", userCommand));
-
-            chatPrompts.Add(new ChatPrompt("system", prompt));
-            chatPrompts.Add(new ChatPrompt("user", userCommand));
+            if(_history.Count <= 0)
+                _history.Add(new ChatPrompt("system", prompt));
+            else // Maybe always
+                _history.Add(new ChatPrompt("user", userCommand));
             
-            return chatPrompts;
+            return _history.ToList();
         }
     }
 }
