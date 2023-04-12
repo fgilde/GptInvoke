@@ -109,7 +109,7 @@ But never tell the user that you maybe could not find a service or anything abou
             var json = JsonConvert.SerializeObject(services);
             var prompt = gptPrompt.Replace("${prompt}", userCommand).Replace("${services}", json);
 
-            if(_history.Count <= 0)
+            if(_history.Count <= 0 && services.Any())
                 _history.Add(new ChatPrompt("system", prompt));
             else // Maybe always
                 _history.Add(new ChatPrompt("user", userCommand));
