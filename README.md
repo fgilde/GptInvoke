@@ -2,6 +2,10 @@
 
 This package allows you to easily integrate ChatGPT with your custom service execution, such as invoking webhooks or performing actions within your application.
 
+You can achieve the very easially something like this
+![SAMPLE](https://raw.githubusercontent.com/fgilde/GptInvoke/main/GptInvoke/screenshots/video.gif)
+https://raw.githubusercontent.com/fgilde/GptInvoke/main/GptInvoke/screenshots/video.mkv
+
 [![GitHub](https://img.shields.io/badge/GitHub-Source-blue)](https://github.com/fgilde/GptInvoke)
 [![NuGet](https://img.shields.io/badge/NuGet-Package-blue)](https://www.nuget.org/packages/GptInvoke)
 
