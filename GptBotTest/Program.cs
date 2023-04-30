@@ -18,7 +18,7 @@ using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices(services => services.AddGptActionInvoker(settings =>
     {
         settings.ApiKey = apiKey;
-        settings.Model = Model.GPT3_5_Turbo; // YOU should use GPT-4 if you can
+        settings.Model = Model.GPT4; // YOU should use GPT-4 if you can
     }))
     .Build();
 

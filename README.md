@@ -121,7 +121,9 @@ public class MyProductService : IGptInvokableService
 }
 ```
 
-Services can then invoked like this 
+Services can then easially invoked. For example in a Console Prompt or whatever you want to build on top of of.
+
+![Screenshot](https://raw.githubusercontent.com/fgilde/GptInvoke/main/GptInvoke/screenshots/MixedLang.png)
 
 ![Screenshot](https://raw.githubusercontent.com/fgilde/GptInvoke/main/GptInvoke/screenshots/Clock_DE.png)
 

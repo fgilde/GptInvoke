@@ -19,10 +19,10 @@ namespace GptInvoke
 
         private const string gtpExplain = @"""
 I give you a user prompt and a List of services with information what they can handle and what parameter they need. 
-If you think the prompt can handled by a service you need to ensure that you have all required parameters for this service filled out by the user. If parameters are missing ask the user until you have all required parameters.  Afterwards just answer with a json string in this format
+If you think the prompt can handled by a service you need to ensure that you have all required parameters for this service filled out by the user. If parameters are missing ask the user until you have all required parameters. And please try to convert the Parameter to the required type. Afterwards just answer with a json string in this format
 { ""Service"" : ""ServiceName"", ""Type"": ""ServiceType"", ""Parameters"": [{ ""Key"": ""ParameterName"", ""Value"": ""ParameterValue""}, {... }]}
 If you think you need more values for parameters try to ask until you have all and then respond in described JSON.  Please never respond the Json util you have all required parameters filled out. And if you have all parameters only respond the json and nothing else.
-Also, if you think that no service can handle the prompt, just answer as you would normally answer the prompt as an initial question. 
+Also, if you think that no service can handle the prompt, just answer as you would normally answer the prompt as an initial question. And please answer in the same language as the prompt.
 But never tell the user that you maybe could not find a service or anything about registered services. Also dont ask for the service to use. You need to find out. 
 """;
 
