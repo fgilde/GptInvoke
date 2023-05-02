@@ -22,7 +22,9 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddGptActionInvoker(this IServiceCollection services, GptActionInvokeSettings settings, params Assembly[] serviceImplementationAssemblies)
     {
         services.AddTransient(_ => settings);
-        services.AddTransient<IGptActionInvoker, GptActionInvoker>();
+        ServiceDescriptor invokerServiceDescriptor = new ServiceDescriptor(typeof(IGptActionInvoker), typeof(GptActionInvoker), settings.InvokerServiceLifetime);
+        services.Add(invokerServiceDescriptor);
+        //services.AddTransient<IGptActionInvoker, GptActionInvoker>();
         return services.RegisterAllImplementationsOf(new[] { typeof(IGptInvokableService) }, serviceImplementationAssemblies);
     }
 

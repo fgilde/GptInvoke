@@ -1,4 +1,5 @@
-﻿using OpenAI.Models;
+﻿using Microsoft.Extensions.DependencyInjection;
+using OpenAI.Models;
 
 namespace GptInvoke.Contracts;
 
@@ -27,6 +28,8 @@ public class GptActionInvokeSettings
     /// Set up when history should automatically cleared. Default is after a successful invocation
     /// </summary>
     public GptHistoryClearBehaviour HistoryClearBehaviour { get; set; } = GptHistoryClearBehaviour.OnSuccessfulInvoke;
+
+    public ServiceLifetime InvokerServiceLifetime { get; set; } = ServiceLifetime.Transient;
 }
 
 public enum GptHistoryClearBehaviour
