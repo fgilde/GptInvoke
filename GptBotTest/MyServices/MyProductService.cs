@@ -6,10 +6,14 @@ public class MyProductService : IGptInvokableService
 {
     public string Name { get; set; } = "Add Product service";
     public string Description { get; set; } = "I can add products";
+
     public GptInvokableServiceParameter[] Parameters => new[]
     {
         new GptInvokableServiceParameter("Name", "Name of the product to add", typeof(string), true),
-        new GptInvokableServiceParameter("Barcode", "Barcode of product", typeof(string), true)
+        new GptInvokableServiceParameter("Barcode", "Barcode of product", typeof(string), true),
+        new GptInvokableServiceParameter("Description", "Description of product", typeof(string), false),
+        new GptInvokableServiceParameter("Brand", "Brand for this product", typeof(string), true),
+        new GptInvokableServiceParameter("Rate", "Description of product", typeof(decimal), true),
     };
 
     public Task<bool> ExecuteAsync(IDictionary<string, object> parameters)

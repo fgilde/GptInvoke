@@ -21,6 +21,8 @@ public class GptActionInvokeSettings
     /// </summary>
     public bool AutoInvokeFoundService { get; set; } = true;
 
+    public HistoryAddBehaviour HistoryAddBehaviour { get; set; } = HistoryAddBehaviour.Default;
+
     /// <summary>
     /// Set up when history should automatically cleared. Default is after a successful invocation
     /// </summary>
@@ -34,4 +36,10 @@ public enum GptHistoryClearBehaviour
     OnSuccessfulInvoke,
     OnFailureInvoke,
     OnEveryResponse,
+}
+
+public enum HistoryAddBehaviour
+{
+    Default,
+    UserAlways,
 }
