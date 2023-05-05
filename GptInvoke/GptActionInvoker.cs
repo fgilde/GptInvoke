@@ -48,7 +48,29 @@ But never tell the user that you maybe could not find a service or anything abou
 
         public void SetHistory(IEnumerable<ChatPrompt> history)
         {
-            _history = new BlockingCollection<ChatPrompt>(new ConcurrentQueue<ChatPrompt>(history));
+            // Check if the history contains a ChatPrompt with Role equal to 'system'
+            var chatPrompts = history as ChatPrompt[] ?? history.ToArray();
+            bool containsSystemRole = chatPrompts.Any(chatPrompt => chatPrompt.Role == "system");
+
+            // Create a new empty ConcurrentQueue
+            ConcurrentQueue<ChatPrompt> newHistoryQueue = new ConcurrentQueue<ChatPrompt>();
+
+            // If the history doesn't contain a 'system' role, insert it as the first item
+            if (!containsSystemRole)
+            {
+                var systemPrompt = CreateSystemPrompt(chatPrompts.FirstOrDefault()?.Content);
+                if (systemPrompt != null)
+                    newHistoryQueue.Enqueue(systemPrompt);
+            }
+
+            // Add the existing history to the new queue
+            foreach (ChatPrompt chatPrompt in chatPrompts)
+            {
+                newHistoryQueue.Enqueue(chatPrompt);
+            }
+
+            // Set the new history queue to the BlockingCollection
+            _history = new BlockingCollection<ChatPrompt>(newHistoryQueue);
         }
 
         public async Task<OneOf<string, GptServiceResult>> PromptAsync(string userCommand, 
@@ -104,7 +126,7 @@ But never tell the user that you maybe could not find a service or anything abou
             return null;
         }
 
-        private List<ChatPrompt> ChatPrompts(string userCommand)
+        private ChatPrompt? CreateSystemPrompt(string userCommand)
         {
             var services = _serviceProvider.GetServices<IGptInvokableService>().Select(service => new
             {
@@ -113,19 +135,28 @@ But never tell the user that you maybe could not find a service or anything abou
                 Type = service.GetType().FullName,
                 service.Parameters
             }).ToArray();
+            if (!services.Any() || string.IsNullOrEmpty(userCommand))
+                return null;
+            
             var json = JsonConvert.SerializeObject(services);
             var prompt = gptPrompt.Replace("${prompt}", userCommand).Replace("${services}", json);
+            return new ChatPrompt("system", prompt);
+        }
+
+        private List<ChatPrompt> ChatPrompts(string userCommand)
+        {
+            var systemPrompt = CreateSystemPrompt(userCommand);
 
             if (_settings.HistoryAddBehaviour == HistoryAddBehaviour.UserAlways)
             {
-                if (_history.Count <= 0 && services.Any())
-                    _history.Add(new ChatPrompt("system", prompt));
+                if (_history.Count <= 0 && systemPrompt != null)
+                    _history.Add(systemPrompt);
                 _history.Add(new ChatPrompt("user", userCommand));
             }
             else
             {
-                if (_history.Count <= 0 && services.Any())
-                    _history.Add(new ChatPrompt("system", prompt));
+                if (_history.Count <= 0 && systemPrompt != null)
+                    _history.Add(systemPrompt);
                 else // Maybe always
                     _history.Add(new ChatPrompt("user", userCommand));
             }
