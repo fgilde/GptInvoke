@@ -2,13 +2,13 @@
 
 namespace GptBotTest.MyServices;
 
-public class MyClockService : IGptInvokableService
+public class MyClockService : IAIInvokableService
 {
     public string Name { get; set; } = "Alarm clock service";
     public string Description { get; set; } = "I can set up an alarm clock";
-    public GptInvokableServiceParameter[] Parameters => new []
+    public AIInvokableServiceParameter[] Parameters => new []
     {
-        new GptInvokableServiceParameter("DateTime", "Target time to set alarm for", typeof(DateTime), true)
+        new AIInvokableServiceParameter("DateTime", "Target time to set alarm for", typeof(DateTime), true)
     };
 
     public Task<bool> ExecuteAsync(IDictionary<string, object> parameters)

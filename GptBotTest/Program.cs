@@ -15,7 +15,7 @@ var apiKey = Environment.GetEnvironmentVariable("GPT_API_KEY", EnvironmentVariab
 
 using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureLogging(logging => logging.ClearProviders())
-    .ConfigureServices(services => services.AddGptActionInvoker(settings =>
+    .ConfigureServices(services => services.AddOpenAIActionInvoker(settings =>
     {
         settings.ApiKey = apiKey;
         settings.Model = Model.GPT4; // YOU should use GPT-4 if you can
@@ -24,7 +24,7 @@ using IHost host = Host.CreateDefaultBuilder(args)
 
 
 _= host.RunAsync();
-var commander = host.Services.GetRequiredService<IGptActionInvoker>();
+var commander = host.Services.GetRequiredService<IAIActionInvoker>();
 Console.WriteLine("How can I assist you?");
 while (true)
 {

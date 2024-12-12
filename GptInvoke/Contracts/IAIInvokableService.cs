@@ -1,10 +1,10 @@
 ﻿namespace GptInvoke.Contracts;
 
-public interface IGptInvokableService
+public interface IAIInvokableService
 {
     public string Name { get; }
     public string Description {  get; }
-    public GptInvokableServiceParameter[] Parameters { get; }
+    public AIInvokableServiceParameter[] Parameters { get; }
 
     public Task<bool> ExecuteAsync(IDictionary<string, object> parameters);
 }

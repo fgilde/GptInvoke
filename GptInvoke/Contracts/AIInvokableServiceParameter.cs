@@ -1,8 +1,8 @@
 ﻿namespace GptInvoke.Contracts;
 
-public class GptInvokableServiceParameter
+public class AIInvokableServiceParameter
 {
-    public GptInvokableServiceParameter(string name, string description, Type type, bool isRequired)
+    public AIInvokableServiceParameter(string name, string description, Type type, bool isRequired)
     {
         Name = name;
         Description = description;

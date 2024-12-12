@@ -3,7 +3,8 @@ using OpenAI.Models;
 
 namespace GptInvoke.Contracts;
 
-public class GptActionInvokeSettings
+
+public class GptActionInvokeSettings : AIActionInvokeSettings
 {
 
     /// <summary>
@@ -17,6 +18,11 @@ public class GptActionInvokeSettings
     /// </summary>
     public string ApiKey { get; set; }
 
+}
+
+public class AIActionInvokeSettings
+{
+
     /// <summary>
     /// Set this to false If you prefer to call possible service manually
     /// </summary>
@@ -27,12 +33,12 @@ public class GptActionInvokeSettings
     /// <summary>
     /// Set up when history should automatically cleared. Default is after a successful invocation
     /// </summary>
-    public GptHistoryClearBehaviour HistoryClearBehaviour { get; set; } = GptHistoryClearBehaviour.OnSuccessfulInvoke;
+    public ChatHistoryClearBehaviour HistoryClearBehaviour { get; set; } = ChatHistoryClearBehaviour.OnSuccessfulInvoke;
 
     public ServiceLifetime InvokerServiceLifetime { get; set; } = ServiceLifetime.Transient;
 }
 
-public enum GptHistoryClearBehaviour
+public enum ChatHistoryClearBehaviour
 {
     Never,
     OnInvoke,

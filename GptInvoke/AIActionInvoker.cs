@@ -4,19 +4,15 @@ using GptInvoke.Helper;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using OneOf;
-using OpenAI;
-using OpenAI.Chat;
-using OpenAI.Models;
 
 namespace GptInvoke
 {
-    internal sealed class GptActionInvoker: IGptActionInvoker
+    internal sealed class AIActionInvoker: IAIActionInvoker
     {
-        private OpenAIClient Api { get; }
-        private readonly GptActionInvokeSettings _settings;
+        private readonly IAIHandler? _iaiHandler;
+        private readonly AIActionInvokeSettings _settings;
         private readonly IServiceProvider _serviceProvider;
-        private BlockingCollection<ChatPrompt> _history = new();
-
+        private BlockingCollection<AIMessage> _history = new();
         private const string gtpExplain = @"""
 I give you a user prompt and a List of services with information what they can handle and what parameter they need. 
 If you think the prompt can handled by a service you need to ensure that you have all required parameters for this service filled out by the user. If parameters are missing and required ask the user until you have all required parameters. And please try to convert the Parameter to the required type. Afterwards just answer with a json string in this format
@@ -30,105 +26,107 @@ But never tell the user that you maybe could not find a service or anything abou
                                          "\r\nThis is the prompt: \"${prompt}\"" +
                                          "\r\nServices: ${services}";
 
-
-        public GptActionInvoker(GptActionInvokeSettings settings, IServiceProvider serviceProvider)
+        public AIActionInvoker(
+            AIActionInvokeSettings settings,
+            IServiceProvider serviceProvider
+        )
         {
             _settings = settings;
             _serviceProvider = serviceProvider;
-            Api = new OpenAIClient(settings.ApiKey);
+            _iaiHandler = _serviceProvider.GetService<IAIHandler>();
         }
-        
+
         public Task ClearHistoryAsync()
         {
-            while(_history.TryTake(out _)){ }
+            while (_history.TryTake(out _)) { }
             return Task.CompletedTask;
         }
 
-        public IEnumerable<ChatPrompt> History => _history;
+        public IEnumerable<AIMessage> History => _history;
 
-        public void SetHistory(IEnumerable<ChatPrompt> history)
+        public void SetHistory(IEnumerable<AIMessage> history)
         {
-            // Check if the history contains a ChatPrompt with Role equal to 'system'
-            var chatPrompts = history as ChatPrompt[] ?? history.ToArray();
-            bool containsSystemRole = chatPrompts.Any(chatPrompt => chatPrompt.Role == "system");
+            var messages = history.ToArray();
+            bool containsSystemRole = messages.Any(m => m.Role == "system");
 
-            // Create a new empty ConcurrentQueue
-            ConcurrentQueue<ChatPrompt> newHistoryQueue = new ConcurrentQueue<ChatPrompt>();
+            ConcurrentQueue<AIMessage> newHistoryQueue = new ConcurrentQueue<AIMessage>();
 
-            // If the history doesn't contain a 'system' role, insert it as the first item
             if (!containsSystemRole)
             {
-                var systemPrompt = CreateSystemPrompt(chatPrompts.FirstOrDefault()?.Content);
+                var systemPrompt = CreateSystemPrompt(messages.FirstOrDefault()?.Content);
                 if (systemPrompt != null)
                     newHistoryQueue.Enqueue(systemPrompt);
             }
 
-            // Add the existing history to the new queue
-            foreach (ChatPrompt chatPrompt in chatPrompts)
+            foreach (var msg in messages)
             {
-                newHistoryQueue.Enqueue(chatPrompt);
+                newHistoryQueue.Enqueue(msg);
             }
 
-            // Set the new history queue to the BlockingCollection
-            _history = new BlockingCollection<ChatPrompt>(newHistoryQueue);
+            _history = new BlockingCollection<AIMessage>(newHistoryQueue);
         }
 
-        public async Task<OneOf<string, GptServiceResult>> PromptAsync(string userCommand, 
+        public async Task<OneOf<string, AIInvokeServiceResult>> PromptAsync(string userCommand,
             Action<string>? resultHandler = null, CancellationToken cancellationToken = default)
         {
-            var chatPrompts = ChatPrompts(userCommand);
-            var chatRequest = new ChatRequest(chatPrompts, _settings.Model ?? Model.GPT3_5_Turbo);
+            var messages = ChatPrompts(userCommand);
+            var request = new AIRequest
+            {
+                Messages = messages.ToList()
+            };
+
             string responseString = string.Empty;
 
             if (resultHandler != null)
             {
-                await Api.ChatEndpoint.StreamCompletionAsync(chatRequest, response =>
+                await _iaiHandler.StreamCompletionAsync(request, part =>
                 {
-                    var part = response.FirstChoice.ToString();
                     responseString += part;
-                    resultHandler?.Invoke(part);
+                    resultHandler(part);
                 }, cancellationToken);
             }
             else
             {
-                var response = await Api.ChatEndpoint.GetCompletionAsync(chatRequest, cancellationToken);
-                responseString = response.FirstChoice.ToString();
+                responseString = await _iaiHandler.GetCompletionAsync(request, cancellationToken);
             }
 
             var result = await CheckResultAsync(responseString);
             if (result != null)
             {
-                if (_settings.HistoryClearBehaviour == GptHistoryClearBehaviour.OnInvoke 
-                    || (_settings.HistoryClearBehaviour == GptHistoryClearBehaviour.OnSuccessfulInvoke && result.Successful)
-                    || (_settings.HistoryClearBehaviour == GptHistoryClearBehaviour.OnFailureInvoke && !result.Successful))
+                if (_settings.HistoryClearBehaviour == ChatHistoryClearBehaviour.OnInvoke
+                    || (_settings.HistoryClearBehaviour == ChatHistoryClearBehaviour.OnSuccessfulInvoke && result.Successful)
+                    || (_settings.HistoryClearBehaviour == ChatHistoryClearBehaviour.OnFailureInvoke && !result.Successful))
                     await ClearHistoryAsync();
                 return result;
             }
 
-            _history.Add(new ChatPrompt("assistant", responseString), cancellationToken);
-            if (_settings.HistoryClearBehaviour == GptHistoryClearBehaviour.OnEveryResponse)
+            _history.Add(new AIMessage { Role = "assistant", Content = responseString }, cancellationToken);
+            if (_settings.HistoryClearBehaviour == ChatHistoryClearBehaviour.OnEveryResponse)
                 await ClearHistoryAsync();
             return responseString;
         }
 
-        private async Task<GptServiceResult?> CheckResultAsync(string gptResponse)
+        private async Task<AIInvokeServiceResult?> CheckResultAsync(string gptResponse)
         {
-            if (Utils.TryParse<GptServiceResult>(gptResponse, out var completionResult) || Utils.TryParsePartial<GptServiceResult>(gptResponse, out completionResult))
+            if (Utils.TryParse<AIInvokeServiceResult>(gptResponse, out var completionResult) || Utils.TryParsePartial<AIInvokeServiceResult>(gptResponse, out completionResult))
             {
-                var service = _serviceProvider.GetServices<IGptInvokableService>().FirstOrDefault(s => s.GetType().FullName == completionResult.Type);
+                var service = _serviceProvider.GetServices<IAIInvokableService>()
+                    .FirstOrDefault(s => s.GetType().FullName == completionResult.Type);
                 if (service != null)
                 {
                     completionResult.UsedService = service;
-                    completionResult.Successful = await service.ExecuteAsync(completionResult.Parameters.ToDictionary(p => p.Key, p => p.Value));
+                    completionResult.Successful = await service.ExecuteAsync(
+                        completionResult.Parameters.ToDictionary(p => p.Key, p => p.Value)
+                    );
                 }
                 return completionResult;
             }
             return null;
         }
 
-        private ChatPrompt? CreateSystemPrompt(string userCommand)
+        private AIMessage? CreateSystemPrompt(string userCommand)
         {
-            var services = _serviceProvider.GetServices<IGptInvokableService>().Select(service => new
+            var services = _serviceProvider.GetServices<IAIInvokableService>().Select(service => new
             {
                 service.Name,
                 service.Description,
@@ -137,13 +135,13 @@ But never tell the user that you maybe could not find a service or anything abou
             }).ToArray();
             if (!services.Any() || string.IsNullOrEmpty(userCommand))
                 return null;
-            
+
             var json = JsonConvert.SerializeObject(services);
             var prompt = gptPrompt.Replace("${prompt}", userCommand).Replace("${services}", json);
-            return new ChatPrompt("system", prompt);
+            return new AIMessage { Role = "system", Content = prompt };
         }
 
-        private List<ChatPrompt> ChatPrompts(string userCommand)
+        private List<AIMessage> ChatPrompts(string userCommand)
         {
             var systemPrompt = CreateSystemPrompt(userCommand);
 
@@ -151,17 +149,16 @@ But never tell the user that you maybe could not find a service or anything abou
             {
                 if (_history.Count <= 0 && systemPrompt != null)
                     _history.Add(systemPrompt);
-                _history.Add(new ChatPrompt("user", userCommand));
+                _history.Add(new AIMessage { Role = "user", Content = userCommand });
             }
             else
             {
                 if (_history.Count <= 0 && systemPrompt != null)
                     _history.Add(systemPrompt);
-                else // Maybe always
-                    _history.Add(new ChatPrompt("user", userCommand));
+                else
+                    _history.Add(new AIMessage { Role = "user", Content = userCommand });
             }
-            
-            
+
             return _history.ToList();
         }
     }
