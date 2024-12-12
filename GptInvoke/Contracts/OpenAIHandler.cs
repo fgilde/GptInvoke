@@ -15,10 +15,24 @@ public class OpenAiHandler : IAIHandler
         _openAiClient = new OpenAIClient(apiKey);
     }
 
+    private Role FindRole(string role)
+    {
+        // "user", "assistant", "system"
+        if (role.Equals("user", StringComparison.InvariantCultureIgnoreCase))
+            return Role.User;
+        if (role.Equals("assistant", StringComparison.InvariantCultureIgnoreCase))
+            return Role.Assistant;
+        if (role.Equals("system", StringComparison.InvariantCultureIgnoreCase))
+            return Role.System;
+        if (role.Equals("tool", StringComparison.InvariantCultureIgnoreCase))
+            return Role.Tool;
+        return Role.User;
+    }
+
     public async Task<string> GetCompletionAsync(AIRequest request, CancellationToken cancellationToken = default)
     {
         var chatRequest = new ChatRequest(
-            messages: request.Messages.Select(m => new ChatPrompt(m.Role, m.Content)).ToList(),
+            messages: request.Messages.Select(m => new Message(FindRole(m.Role), m.Content)).ToList(),
             model: request.Model ?? Model.GPT3_5_Turbo
         );
 
@@ -29,7 +43,7 @@ public class OpenAiHandler : IAIHandler
     public async Task StreamCompletionAsync(AIRequest request, Action<string> responseHandler, CancellationToken cancellationToken = default)
     {
         var chatRequest = new ChatRequest(
-            messages: request.Messages.Select(m => new ChatPrompt(m.Role, m.Content)).ToList(),
+            messages: request.Messages.Select(m => new Message(FindRole(m.Role), m.Content)).ToList(),
             model: request.Model ?? _model ?? Model.GPT3_5_Turbo
         );
 
@@ -37,6 +51,6 @@ public class OpenAiHandler : IAIHandler
         {
             var part = response.FirstChoice.ToString();
             responseHandler(part);
-        }, cancellationToken);
+        }, cancellationToken: cancellationToken);
     }
 }
